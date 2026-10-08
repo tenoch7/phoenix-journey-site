@@ -678,6 +678,9 @@ button.day[aria-pressed="true"] {
   /* Juan's "Booked times" Google Sheet, published to the web as CSV. Column A is the date, column B the time
      (leave B empty to block the whole day). When it loads, it replaces the booked list saved in the page. */
   var BOOKED_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJSFhcKt_jL2yBXxd4k6r8RM2-9HkDCMtAS_D6iLayqyb_dhDfEsA5zS8-XxG_tHmkLWD-yc9TdA3q/pub?gid=0&single=true&output=csv";
+  /* The "Open days" tab of the same sheet, published as CSV. Column A is the date; column B (optional) is Evening,
+     Saturday or Sunday, otherwise the schedule follows the weekday. When it loads, it replaces the dates in WINDOWS. */
+  var OPEN_SHEET_URL = "";
 
   /* Services offered, in the order they appear on the form. Names live in TEXT.services. */
   var SERVICE_IDS = ["healing", "massage", "classes"];
@@ -944,10 +947,15 @@ button.day[aria-pressed="true"] {
   function daysInMonth(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
 
   var AVAIL = {};
-  WINDOWS.forEach(function (w) {
-    w.dates.forEach(function (iso) { AVAIL[iso] = { hours: w.hours.slice(), win: w.id }; });
-  });
-  var DATES = Object.keys(AVAIL).sort();
+  var DATES = [];
+  function rebuildAvail() {
+    AVAIL = {};
+    WINDOWS.forEach(function (w) {
+      w.dates.forEach(function (iso) { AVAIL[iso] = { hours: w.hours.slice(), win: w.id }; });
+    });
+    DATES = Object.keys(AVAIL).sort();
+  }
+  rebuildAvail();
 
   function keyOf(iso, hour) { return iso + "T" + pad(hour) + ":00"; }
   var KEY_RE = /^(\d{4}-\d{2}-\d{2})T(\d{2}):00$/;
@@ -1170,7 +1178,7 @@ button.day[aria-pressed="true"] {
 
   function legendHtml() {
     var T = t();
-    var rows = WINDOWS.map(function (w) {
+    var rows = WINDOWS.filter(function (w) { return w.dates.length; }).map(function (w) {
       var groups = [];
       w.dates.slice().sort().forEach(function (iso) {
         var p = parseISO(iso);
@@ -1736,26 +1744,63 @@ button.day[aria-pressed="true"] {
     if (m[2] === "a" && h === 12) h = 0;
     return h;
   }
-  function loadSheet() {
-    if (!BOOKED_SHEET_URL || typeof fetch !== "function") return;
-    var url = BOOKED_SHEET_URL + (BOOKED_SHEET_URL.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
-    fetch(url, { cache: "no-store" }).then(function (r) {
+  function fetchCsv(base) {
+    var url = base + (base.indexOf("?") >= 0 ? "&" : "?") + "t=" + Date.now();
+    return fetch(url, { cache: "no-store" }).then(function (r) {
       if (!r.ok) throw new Error("sheet " + r.status);
       return r.text();
-    }).then(function (text) {
-      var next = new Set();
-      parseCsv(text).forEach(function (cells) {
-        var iso = sheetDate(cells[0]);
-        if (!iso || !AVAIL[iso]) return;
-        var h = sheetHour(cells[1]);
-        if (h === -1) AVAIL[iso].hours.forEach(function (x) { next.add(keyOf(iso, x)); });
-        else if (isValidKey(keyOf(iso, h))) next.add(keyOf(iso, h));
-      });
-      published = next;
+    }).then(parseCsv);
+  }
+  /* Evening, Saturday or Sunday in column B (English or Spanish); empty follows the weekday */
+  function sheetWindow(s, iso) {
+    s = String(s || "").trim().toLowerCase();
+    if (/^(sat|s[aá]b)/.test(s)) return "saturday";
+    if (/^(sun|dom)/.test(s)) return "sunday";
+    if (/^(eve|tar|noc)/.test(s)) return "evening";
+    var d = dowOf(iso);
+    return d === 6 ? "saturday" : d === 0 ? "sunday" : "evening";
+  }
+  function applyOpenDays(rows) {
+    var byWin = {}, seen = {};
+    WINDOWS.forEach(function (w) { byWin[w.id] = []; });
+    rows.forEach(function (cells) {
+      var iso = sheetDate(cells[0]);
+      if (!iso || seen[iso]) return;
+      var win = sheetWindow(cells[1], iso);
+      if (!byWin[win]) return;
+      seen[iso] = true;
+      byWin[win].push(iso);
+    });
+    if (!Object.keys(seen).length) return false;
+    WINDOWS.forEach(function (w) { w.dates = byWin[w.id].sort(); });
+    rebuildAvail();
+    return true;
+  }
+  function applyBooked(rows) {
+    var next = new Set();
+    rows.forEach(function (cells) {
+      var iso = sheetDate(cells[0]);
+      if (!iso || !AVAIL[iso]) return;
+      var h = sheetHour(cells[1]);
+      if (h === -1) AVAIL[iso].hours.forEach(function (x) { next.add(keyOf(iso, x)); });
+      else if (isValidKey(keyOf(iso, h))) next.add(keyOf(iso, h));
+    });
+    published = next;
+  }
+  function loadSheet() {
+    if (typeof fetch !== "function" || (!OPEN_SHEET_URL && !BOOKED_SHEET_URL)) return;
+    var openChanged = false;
+    var open = OPEN_SHEET_URL
+      ? fetchCsv(OPEN_SHEET_URL).then(function (rows) { openChanged = applyOpenDays(rows); }, function () {})
+      : Promise.resolve();
+    open.then(function () {
+      return BOOKED_SHEET_URL ? fetchCsv(BOOKED_SHEET_URL).then(applyBooked, function () {}) : null;
+    }).then(function () {
+      if (sel.date && !AVAIL[sel.date]) sel = { date: "", hour: -1 };
       if (sel.date && sel.hour >= 0 && !sent && isBooked(sel.date, sel.hour)) sel.hour = -1;
-      renderGrid();
-      renderPanel();
-    }).catch(function () {});
+      if (openChanged) renderAll();
+      else { renderGrid(); renderPanel(); }
+    });
   }
 
   function detectOwner() {
