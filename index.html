@@ -756,7 +756,8 @@ button.day[aria-pressed="true"] {
         certificate: "Juan's framed Reiki Master certificate, with a photo of Juan's father playing guitar tucked into the frame",
         wheel: "A hand-painted chakra wheel covered in healing affirmations",
         dog: "Fénix, Juan's fluffy pup, resting on the couch in the healing room",
-        tattoo: "Juan's forearm tattoo of Mictlantecuhtli, a skull wearing a turquoise Aztec headdress"
+        tattoo: "Juan's forearm tattoo of Mictlantecuhtli, a skull wearing a turquoise Aztec headdress",
+        phoenixTattoo: "Juan's forearm tattoo of a fiery Phoenix rising above a skeleton"
       },
       jump: "Book a session",
       reikiTitle: "What Reiki feels like",
@@ -895,7 +896,8 @@ button.day[aria-pressed="true"] {
         certificate: "El certificado de Reiki Master de Juan, enmarcado, con una foto de su papá tocando la guitarra",
         wheel: "Una rueda de chakras pintada a mano, llena de afirmaciones de sanación",
         dog: "Fénix, el perrito peludo de Juan, descansando en el sillón del cuarto de sanación",
-        tattoo: "El tatuaje de Mictlantecuhtli en el antebrazo de Juan, una calavera con un tocado azteca turquesa"
+        tattoo: "El tatuaje de Mictlantecuhtli en el antebrazo de Juan, una calavera con un tocado azteca turquesa",
+        phoenixTattoo: "El tatuaje en el antebrazo de Juan de un Fénix de fuego que se eleva sobre un esqueleto"
       },
       jump: "Reserva una sesión",
       reikiTitle: "Cómo se siente el Reiki",
@@ -1341,7 +1343,7 @@ button.day[aria-pressed="true"] {
     return '<p class="jump"><a class="ghost" href="#cal-title">' + esc(T.jump) + "</a></p>" +
       '<div class="about">' +
       "<h2>" + esc(T.phoenixTitle) + "</h2>" +
-      ps(T.phoenix) +
+      '<div class="phoenix"><div class="text">' + ps(T.phoenix) + "</div>" + img("img/phoenix-tattoo.jpg", P.phoenixTattoo, 640, 800, false) + "</div>" +
       "<h2>" + esc(T.mictlanTitle) + "</h2>" +
       '<div class="phoenix"><div class="text">' + ps(T.mictlan) + "</div>" + img("img/mictlantecuhtli.jpg", P.tattoo, 800, 1000, true) + "</div>" +
       '<p class="close">' + esc(T.phoenixClose) + "</p>" +
