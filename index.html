@@ -737,7 +737,8 @@ button.day[aria-pressed="true"] {
         hands: "Juan holding his hands just above a client lying on a mat",
         chest: "Juan holding a tuning fork near a client's chest",
         feet: "Juan holding tuning forks at a client's feet",
-        juan: "Juan smiling with a peace sign in front of a tree of life tapestry"
+        juan: "Juan smiling with a peace sign in front of a tree of life tapestry",
+        tattoo: "Juan's forearm tattoo of Mictlantecuhtli, a skull wearing a turquoise Aztec headdress"
       },
       jump: "Book a session",
       phoenixTitle: "Why the Phoenix",
@@ -746,6 +747,12 @@ button.day[aria-pressed="true"] {
         "The first time I heard the word Reiki, it came from my father. He planted a seed I wasn't able to nourish at the time, and I know he's proud to see it bloom now. This Reiki Mastery is for you, papá.",
         "Infinite gratitude to my teacher, Bailee Rasmussen, my mentor, guide and friend every step of the way. I'm committed to continuing this work with the ethic, passion and empathy I was taught.",
         "That's the journey I believe in. We all carry things that have already done their job: old stress, old stories, old ways of holding on. Letting them burn isn't losing yourself, it's making room. My part is to hold the space while you do it, gently and without judgment, for everyone I'm meant to cross paths with, just like my father did."
+      ],
+      mictlanTitle: "Endings feed beginnings",
+      mictlan: [
+        "Mictlantecuhtli is the lord of Mictlan, the Aztec underworld. For the Aztecs, death was never the end of the story. Souls traveled through the nine levels of Mictlan, and from the bones of those who came before, new life was made.",
+        "That's exactly what I hold space for in every Reiki session: letting go of what's done so something new can rise. That's the whole Phoenix Journey.",
+        "Now he lives on my arm, a reminder to honor where I come from and to walk through every ending trusting there's something new on the other side."
       ],
       phoenixClose: "Rise at your own pace. There's nowhere you need to be.",
       aboutNote: "Reiki works alongside medical care, never in place of it.",
@@ -862,7 +869,8 @@ button.day[aria-pressed="true"] {
         hands: "Juan con las manos justo arriba de una persona recostada en un tapete",
         chest: "Juan con un diapasón cerca del pecho de una persona",
         feet: "Juan con diapasones en los pies de una persona",
-        juan: "Juan sonriendo con la señal de paz frente a un tapiz del árbol de la vida"
+        juan: "Juan sonriendo con la señal de paz frente a un tapiz del árbol de la vida",
+        tattoo: "El tatuaje de Mictlantecuhtli en el antebrazo de Juan, una calavera con un tocado azteca turquesa"
       },
       jump: "Reserva una sesión",
       phoenixTitle: "Por qué el Fénix",
@@ -871,6 +879,12 @@ button.day[aria-pressed="true"] {
         "La primera vez que escuché la palabra Reiki fue de mi papá. Él sembró una semilla que en ese momento no pude cultivar, y sé que ahora está orgulloso de verla florecer. Esta Maestría de Reiki es para ti, papá.",
         "Gratitud infinita a Bailee Rasmussen, quien me enseñó, me guió y me acompañó en cada paso del camino. Me comprometo a continuar este trabajo con la ética, la pasión y la empatía que me enseñó.",
         "Ese es el camino en el que creo. Todos cargamos cosas que ya cumplieron su función: estrés viejo, historias viejas, formas viejas de aferrarnos. Dejarlas arder no es perderte, es hacer espacio. Mi parte es sostener el espacio mientras lo haces, con cariño y sin juicio, para cada persona con quien me toca cruzar caminos, como lo hizo mi papá."
+      ],
+      mictlanTitle: "Los finales alimentan los comienzos",
+      mictlan: [
+        "Mictlantecuhtli es el señor del Mictlán, el inframundo azteca. Para los aztecas, la muerte nunca fue el final de la historia. Las almas recorrían los nueve niveles del Mictlán, y de los huesos de quienes vinieron antes se creaba vida nueva.",
+        "Eso es exactamente lo que sostengo en cada sesión de Reiki: soltar lo que ya terminó para que algo nuevo pueda renacer. De eso se trata todo The Phoenix Journey.",
+        "Ahora él vive en mi brazo, un recordatorio para honrar de dónde vengo y para atravesar cada final confiando en que hay algo nuevo del otro lado."
       ],
       phoenixClose: "Renace a tu ritmo. No tienes que estar en ningún otro lugar.",
       aboutNote: "El Reiki acompaña la atención médica, nunca la reemplaza.",
@@ -1287,8 +1301,10 @@ button.day[aria-pressed="true"] {
       '<div class="strip">' + img("img/hands.jpg", P.hands, 900, 900, true) + img("img/forks-chest.jpg", P.chest, 900, 900, true) +
         img("img/forks-feet.jpg", P.feet, 900, 900, true) + "</div>" +
       "<h2>" + esc(T.phoenixTitle) + "</h2>" +
-      '<div class="phoenix"><div class="text">' + ps(T.phoenix) +
-        '<p class="close">' + esc(T.phoenixClose) + "</p></div>" + img("img/juan.jpg", P.juan, 900, 1125, true) + "</div>" +
+      '<div class="phoenix"><div class="text">' + ps(T.phoenix) + "</div>" + img("img/juan.jpg", P.juan, 900, 1125, true) + "</div>" +
+      "<h2>" + esc(T.mictlanTitle) + "</h2>" +
+      '<div class="phoenix"><div class="text">' + ps(T.mictlan) + "</div>" + img("img/mictlantecuhtli.jpg", P.tattoo, 800, 1000, true) + "</div>" +
+      '<p class="close">' + esc(T.phoenixClose) + "</p>" +
       '<p class="fine">' + esc(T.aboutNote) + "</p></div>";
   }
 
