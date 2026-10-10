@@ -1045,8 +1045,6 @@ button.day[aria-pressed="true"] {
       noIgText: "Not on Instagram? Text it to ",
       restart: "Choose another time",
       footer: "Questions? Message me on Instagram, ",
-      footerText: "Questions? Text me at ",
-      footerOr: " or message me on Instagram, ",
       subject: "Reiki booking",
       monthHeading: function (y, m, withYear) { return this.months[m - 1] + (withYear ? " " + y : ""); },
       phrase: function (wd, d, m) { return wd + ", " + this.months[m - 1] + " " + d; },
@@ -1194,8 +1192,6 @@ button.day[aria-pressed="true"] {
       noIgText: "Si no usas Instagram, mándalo por texto al ",
       restart: "Elegir otro horario",
       footer: "Preguntas o dudas: escríbeme en Instagram, ",
-      footerText: "Preguntas o dudas: mándame un texto al ",
-      footerOr: " o escríbeme en Instagram, ",
       subject: "Reserva de Reiki",
       monthHeading: function (y, m, withYear) { return cap(this.months[m - 1]) + (withYear ? " " + y : ""); },
       phrase: function (wd, d, m) { return wd + " " + d + " de " + this.months[m - 1]; },
@@ -1658,7 +1654,7 @@ button.day[aria-pressed="true"] {
         "</div>" +
         roomHtml() +
         '<footer class="foot"><p class="where">The Phoenix Journey · Body &amp; Soul Energy Studio · Maple Grove, Minnesota</p><p>' +
-          (SMS_NUMBER ? esc(T.footerText) + '<a href="' + esc(smsUrl("")) + '"' + appLinkTarget() + ">" + esc(SMS_DISPLAY) + "</a>" + esc(T.footerOr) : esc(T.footer)) +
+          esc(T.footer) +
           '<a href="' + IG_PROFILE_URL + '" target="_blank" rel="noopener">@' + esc(IG_HANDLE) + "</a></p></footer>" +
         '<p id="live" class="vh" aria-live="polite"></p>';
     renderOwner();
