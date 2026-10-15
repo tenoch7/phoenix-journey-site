@@ -1173,8 +1173,9 @@ button.day[aria-pressed="true"] {
       requestDone: function (when, svc) { return "Your request for " + (svc ? svc + " on " : "") + when + " has been successfully submitted."; },
       requestNext: function (via) { return "I'll reach out " + via + " as soon as possible to block the time you requested and send you the address."; },
       reachVia: { phone: "by phone", email: "by email", ig: "on Instagram" },
-      requestAgainQ: "Didn't see a confirmation tab open? ",
-      requestAgain: "Send your request again",
+      requestSending: "Sending your request…",
+      requestFailed: "Your request didn't go through. Check your connection and try again.",
+      requestRetry: "Try again",
       sendIg: "Send on Instagram",
       sendSms: "Send by text",
       sendMail: "Send by email",
@@ -1328,8 +1329,9 @@ button.day[aria-pressed="true"] {
       requestDone: function (when, svc) { return "Tu solicitud " + (svc ? "de " + svc + " " : "") + "para el " + when + " se envió con éxito."; },
       requestNext: function (via) { return "Te contacto " + via + " lo antes posible para apartarte el horario que pediste y mandarte la dirección."; },
       reachVia: { phone: "por teléfono", email: "por correo", ig: "por Instagram" },
-      requestAgainQ: "Si no se abrió la pestaña de confirmación, ",
-      requestAgain: "envía tu solicitud otra vez",
+      requestSending: "Enviando tu solicitud…",
+      requestFailed: "Tu solicitud no se envió. Revisa tu conexión e inténtalo otra vez.",
+      requestRetry: "Intentar otra vez",
       sendIg: "Enviar por Instagram",
       sendSms: "Enviar por texto",
       sendMail: "Enviar por correo",
@@ -1967,7 +1969,7 @@ button.day[aria-pressed="true"] {
         ' href="' + esc(smsUrl("")) + '"' + appLinkTarget() + ">" + esc(T.sendSms) + "</a>";
     }
     var ctas = REQUEST_URL
-      ? '<a class="cta" data-act="send-request" data-primary="1" href="' + esc(REQUEST_URL) + '" target="_blank" rel="noopener">' + esc(T.sendRequest) + newTabNote() + "</a>"
+      ? '<button type="button" class="cta" data-act="send-request" data-primary="1">' + esc(T.sendRequest) + "</button>"
       : (!SMS_NUMBER ? igBtn(true) : (onPhone() ? smsBtn(true) + igBtn(false) : igBtn(true) + smsBtn(false)));
     if (EMAIL_TO) ctas += '<a class="ghost" data-act="send-mail" href="mailto:' + esc(EMAIL_TO) + '">' + esc(T.sendMail) + "</a>";
     var svc = SERVICE_IDS.map(function (k) {
@@ -2019,11 +2021,10 @@ button.day[aria-pressed="true"] {
     if (sent.channel === "request") {
       return '<div class="done" id="done" tabindex="-1">' +
         '<h4 class="done-head">' + TICK_SVG + "<span>" + esc(T.requestTitle(sent.first)) + "</span></h4>" +
-        "<p>" + esc(T.requestDone(whenPhrase(sent.date, sent.hour), serviceName(sent.service))) + "</p>" +
+        '<p id="done-status">' + esc(requestStatusText()) + "</p>" +
         "<p>" + esc(T.requestNext(T.reachVia[sent.method])) + "</p>" +
+        '<p id="retry"' + (sent.status === "failed" ? "" : " hidden") + '><button type="button" class="ghost" data-act="resend-request">' + esc(T.requestRetry) + "</button></p>" +
         '<button type="button" class="linkbtn" data-act="restart">' + esc(T.restart) + "</button>" +
-        '<p class="hint">' + esc(T.requestAgainQ) +
-          '<a data-act="resend-request" href="' + esc(sent.href) + '" target="_blank" rel="noopener">' + esc(T.requestAgain) + newTabNote() + "</a>.</p>" +
       "</div>";
     }
     return '<div class="done" id="done" tabindex="-1">' +
@@ -2256,17 +2257,49 @@ button.day[aria-pressed="true"] {
     return REQUEST_URL + (REQUEST_URL.indexOf("?") >= 0 ? "&" : "?") + q;
   }
 
+  function requestStatusText() {
+    var T = t();
+    if (sent.status === "sending") return T.requestSending;
+    if (sent.status === "failed") return T.requestFailed;
+    return T.requestDone(whenPhrase(sent.date, sent.hour), serviceName(sent.service));
+  }
+
+  /* Sent in the background, never as a page or tab: a tab left on the script's address
+     re-sends the request (and Juan gets another email) every time the browser restores it */
+  function deliverRequest(mine) {
+    mine.status = "sending";
+    function settle(status) {
+      if (sent !== mine) return;
+      mine.status = status;
+      var st = document.getElementById("done-status");
+      if (st) st.textContent = requestStatusText();
+      var retry = document.getElementById("retry");
+      if (retry) retry.hidden = status !== "failed";
+      announce(requestStatusText());
+    }
+    if (!window.fetch) { settle("failed"); return; }
+    fetch(mine.href, { method: "GET", mode: "no-cors", cache: "no-store", credentials: "omit", redirect: "follow" })
+      .then(function () { settle("ok"); }, function () { settle("failed"); });
+  }
+
   function sendRequest(e) {
-    var link = e.target.closest("a");
+    if (e) e.preventDefault();
     if (!validate()) {
-      e.preventDefault();
       showErrors();
       return;
     }
-    var href = requestHref();
-    if (link) link.setAttribute("href", href);
-    sent = { channel: "request", message: composeMessage(), href: href, copied: null, service: form.service, method: form.method, first: firstName(form.name), date: sel.date, hour: sel.hour };
+    sent = { channel: "request", message: composeMessage(), href: requestHref(), copied: null, service: form.service, method: form.method, first: firstName(form.name), date: sel.date, hour: sel.hour };
+    deliverRequest(sent);
     afterSend();
+  }
+
+  function resendRequest() {
+    if (!sent || sent.channel !== "request" || sent.status === "sending") return;
+    deliverRequest(sent);
+    var st = document.getElementById("done-status");
+    if (st) st.textContent = requestStatusText();
+    var retry = document.getElementById("retry");
+    if (retry) retry.hidden = true;
   }
 
   function copyNumber(btn) {
@@ -2527,6 +2560,7 @@ button.day[aria-pressed="true"] {
       }
       else if (act === "mark") toggleMark(Number(el.getAttribute("data-hour")));
       else if (act === "send-request") sendRequest(e);
+      else if (act === "resend-request") resendRequest();
       else if (act === "send-ig") sendIg(e);
       else if (act === "send-sms") sendApp(e, "sms");
       else if (act === "send-mail") sendApp(e, "mail");
