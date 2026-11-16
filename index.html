@@ -1861,14 +1861,19 @@ button.day[aria-pressed="true"] {
     if (track.scrollTop) track.scrollTop = 0; // a screen reader or find-in-page may have scrolled the row down inside its box
     fitBylines();
   }
-  /* The byline reads "Name · Title" on one line; when the title has to drop to a line of its own, the dot goes too */
+  /* The byline reads "Name · Title" on one line; when the title does not fit beside the name, it gets a line of its own
+     and the dot goes (measured with the dot in place each time, so the result never flips back and forth) */
   function fitBylines() {
     var caps = (root || document).querySelectorAll(".quote figcaption");
     for (var k = 0; k < caps.length; k++) {
       var sep = caps[k].querySelector(".sep"), name = caps[k].querySelector("strong"), role = caps[k].querySelector(".role");
       if (!sep || !name || !role) continue;
       sep.style.display = "";
-      if (role.getBoundingClientRect().top - name.getBoundingClientRect().top > 8) sep.style.display = "none";
+      role.style.display = "";
+      if (role.getBoundingClientRect().top - name.getBoundingClientRect().top > 8) {
+        sep.style.display = "none";
+        role.style.display = "block";
+      }
     }
   }
   /* After a card change, if the row's top is above the screen (a short card took a long one's place, or the reader was
